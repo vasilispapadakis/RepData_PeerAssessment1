@@ -6,49 +6,58 @@ output:
 ---
 
 Loading and Preprocessing data
-```{r}
+
+```r
 data <- read.csv("activity.csv")
 data$date<-as.Date(data$date,format = "%Y-%m-%d")
-
 ```
 
 Total number of steps taken per day
-```{r message=FALSE, warning=FALSE}
+
+```r
 library(dplyr)
 stepsperday <- data %>% 
         group_by(date) %>%
         summarise(steps_per_day=sum(steps, na.rm = T))
-
 ```
 
 Histogram of the total number of steps taken each day
 
 
-```{r}
+
+```r
 hist(stepsperday$steps_per_day,
      xlab ="Steps per day",
      main = "Histogram of total number of steps taken each day"
 )
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
 Calculation of mean and median of the total number of steps taken per day
 
-```{r}
+
+```r
 mn <- mean(stepsperday$steps_per_day)
 mdn <- median(stepsperday$steps_per_day)
-
 ```
 
-The mean of total steps taken per day is `r mn` and the median `r mdn`
+The mean of total steps taken per day is 9354.2295082 and the median 10395
 
 
 
-```{r}
+
+```r
 AvrgStepsPerInt <- data %>%
         group_by(interval) %>%
         summarise(AverageSteps=mean(steps,na.rm = T))
+```
 
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```r
 plot(AvrgStepsPerInt$interval,
      AvrgStepsPerInt$AverageSteps, 
      type="l", 
@@ -56,36 +65,35 @@ plot(AvrgStepsPerInt$interval,
      ylab= "Average Steps", 
      main="Average Steps per 5 min interval"
 )
-
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
 Calculation of 5-minute interval which has on average across all the days,the maximum number of steps
 
 
-```{r}
+
+```r
 maxstepsinterval <- which(AvrgStepsPerInt$AverageSteps==max(AvrgStepsPerInt$AverageSteps))
-
-
 ```
 
-The 5-minute interval which has on average the maximum number of steps is `r AvrgStepsPerInt$interval[maxstepsinterval]`
+The 5-minute interval which has on average the maximum number of steps is 835
 
 
 Calculation of the total number of missing values in the dataset
 
-```{r}
 
+```r
 missingValues <- sum(is.na(data))
-
 ```
 
-The total number of missing values is `r missingValues`
+The total number of missing values is 2304
 
 Filling of missing Values
 
 
-```{r}
+
+```r
 #creating new dataset to be filled 
 FilledDataset <- data
 
@@ -98,52 +106,57 @@ for (i in 1:nrow(FilledDataset)){
                 FilledDataset$steps[i] <- AvrgStepsPerInt$AverageSteps[IntIndic]
         }
 }
-
 ```
 
 
 
-```{r}
 
+```r
 stepsperdayfilled <- FilledDataset %>% 
         group_by(date) %>%
         summarise(steps_per_day=sum(steps, na.rm = T))
+```
 
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
 
+```r
 hist(stepsperdayfilled$steps_per_day,
      xlab ="Steps per day",
      main = "Histogram of total number of steps taken each day (NAs Filled)"
 )
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
 Calculation the mean and median of the new dataset
-```{r}
+
+```r
 mnfld <- mean(stepsperdayfilled$steps_per_day)
 mdnfld <- median(stepsperdayfilled$steps_per_day)
-
 ```
 
 
-The mean and median of total number of steps taken each day, after the NAs were filled is `r sprintf("%.2f",mnfld) `, `r sprintf("%.2f",mdnfld)` respectively. Both values changed from the estimates of the first part. The imputing of missing data moved the median a little higher but had bigger effect on the mean value. It is worthy to note that they have the same value after the imputation.
+The mean and median of total number of steps taken each day, after the NAs were filled is 10766.19, 10766.19 respectively. Both values changed from the estimates of the first part. The imputing of missing data moved the median a little higher but had bigger effect on the mean value. It is worthy to note that they have the same value after the imputation.
 
 
 
 Creating a new variable which indicates if the corresponding day is weekend or weekday
 
-```{r}
+
+```r
 FilledDataset$TypeOfDay <- "Weekday"
 
 FilledDataset$TypeOfDay[weekdays(FilledDataset$date) %in% c("Saturday" , "Sunday")] <- "Weekend"
 
 FilledDataset$TypeOfDay <- as.factor(FilledDataset$TypeOfDay)
-
-
 ```
 
 
 Creating the two plots to compare the activity of weekdays vs weekends
-```{r message=FALSE, warning=FALSE}
+
+```r
 AvrgStepsPerIntFilled <- FilledDataset %>%
         group_by(TypeOfDay, interval) %>%
         summarise(AverageSteps=mean(steps)) %>% 
@@ -169,8 +182,9 @@ plot(AvrgStepsPerIntFilled$interval[wkendIndic],
 
 mtext("Weekend", side=4, cex=1)
 mtext("Interval", side=1, cex=1.2,line= 2.5)
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 
 
